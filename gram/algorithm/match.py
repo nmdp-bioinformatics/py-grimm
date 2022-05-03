@@ -1,4 +1,4 @@
-from my_project_template.model.slug import SLUG
+from gram.model.slug import SLUG
 
 
 # SLUG match
