@@ -26,4 +26,4 @@
 """Top-level package for Graph Family."""
 
 __organization__ = "NMDP/CIBMTR Bioinformatics"
-__version__ = "0.0.3"
+__version__ = "0.0.4"
