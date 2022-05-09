@@ -58,6 +58,7 @@ lint: ## check style with flake8
 	  exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
 	flake8 $(PACKAGE_NAME) tests --count --select=E9,F63,F7,F82 --show-source --statistics
 	flake8 $(PACKAGE_NAME) --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+	pre-commit
 
 behave: clean-test ## run the behave tests, generate and serve report
 	- behave -f allure_behave.formatter:AllureFormatter -o allure_report
