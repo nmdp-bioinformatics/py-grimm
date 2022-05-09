@@ -59,7 +59,7 @@ setup(
     long_description=readme + "\n\n" + history,
     include_package_data=True,
     keywords="gram",
-    name="gram",
+    name="py-gram",
     packages=find_packages(include=["gram"]),
     test_suite="tests",
     tests_require=test_requirements,
