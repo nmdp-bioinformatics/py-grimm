@@ -15,7 +15,7 @@ Types of Contributions
 Report Bugs
 ~~~~~~~~~~~
 
-Report bugs at https://github.com/nmdp-bioinformatics/py-gram/issues.
+Report bugs at https://github.com/nmdp-bioinformatics/py-grimm/issues.
 
 If you are reporting a bug, please include:
 
@@ -45,7 +45,7 @@ articles, and such.
 Submit Feedback
 ~~~~~~~~~~~~~~~
 
-The best way to send feedback is to file an issue at https://github.com/nmdp-bioinformatics/py-gram/issues.
+The best way to send feedback is to file an issue at https://github.com/nmdp-bioinformatics/py-grimm/issues.
 
 If you are proposing a feature:
 
@@ -57,16 +57,16 @@ If you are proposing a feature:
 Get Started!
 ------------
 
-Ready to contribute? Here's how to set up `py-gram` for local development.
+Ready to contribute? Here's how to set up `py-grimm` for local development.
 
-1. Fork the `py-gram` repo on GitHub.
+1. Fork the `py-grimm` repo on GitHub.
 2. Clone your fork locally::
 
-    $ git clone git@github.com:your_name_here/py-gram.git
+    $ git clone git@github.com:your_name_here/py-grimm.git
 
 3. Install your local copy into a virtual environment. This is how you set up your fork for local development::
 
-    $ cd py-gram/
+    $ cd py-grimm/
     $ make venv
     $ source venv/bin/activate
     $ make install
@@ -109,7 +109,7 @@ Tips
 
 To run a subset of tests::
 
-$ pytest tests.test_py-gram
+$ pytest tests.test_py-grimm
 
 
 Deploying
