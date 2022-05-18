@@ -41,6 +41,7 @@ with open("requirements-tests.txt") as requirements_file:
     test_requirements = requirements_file.read().split("\n")
 
 setup(
+    name="py-grimm",
     author="Pradeep Bashyal",
     author_email="pbashyal@nmdp.org",
     python_requires=">=3.8",
@@ -58,8 +59,7 @@ setup(
     license="LGPL 3.0",
     long_description=readme + "\n\n" + history,
     include_package_data=True,
-    keywords="gram",
-    name="py-gram",
+    keywords="graph,em",
     packages=find_packages(include=["gram"]),
     test_suite="tests",
     tests_require=test_requirements,
