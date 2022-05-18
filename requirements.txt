@@ -1,2 +1,2 @@
 toml==0.10.2
-py-grim>=0.0.3
+py-graph-imputation>=0.0.3

@@ -1,8 +1,8 @@
 Graph Family
 
-`py-gram` is the Graph Family package. It is based on [py-grim](https://github.com/nmdp-bioinformatics/py-grim)
+`py-grimm` is the Graph Family package. It is based on [py-graph-imputation](https://github.com/nmdp-bioinformatics/py-graph-imputation)
 
-![py-grim dependencies](images/py-gram.png)
+![py-grimm dependencies](images/py-grimm.png)
 
 How to develop on the project locally:
 
@@ -12,8 +12,8 @@ How to develop on the project locally:
    3. build tools eg `make`
 2. Clone the repository locally
     ```shell
-    git clone git@github.com:nmdp-bioinformatics/py-gram.git
-    cd py-gram
+    git clone git@github.com:nmdp-bioinformatics/py-grimm.git
+    cd py-grimm
     ```
 3. Make a virtual environment and activate it, run `make venv`
    ```shell
