@@ -1,6 +1,7 @@
-Graph Family
+# Graph Based EM and Matching
 
-`py-grimm` is the Graph Family package. It is based on [py-graph-imputation](https://github.com/nmdp-bioinformatics/py-graph-imputation)
+`py-grimm` allows graph based family, EM and matching.
+It is based on [py-graph-imputation](https://github.com/nmdp-bioinformatics/py-graph-imputation)
 
 ![py-grimm dependencies](images/py-grimm.png)
 
