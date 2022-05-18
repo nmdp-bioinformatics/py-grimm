@@ -1,4 +1,5 @@
 # Graph Based EM and Matching
+[![PyPi Version](https://img.shields.io/pypi/v/py-grimm.svg)](https://pypi.python.org/pypi/py-grimm)
 
 `py-grimm` allows graph based family, EM and matching.
 It is based on [py-graph-imputation](https://github.com/nmdp-bioinformatics/py-graph-imputation)
