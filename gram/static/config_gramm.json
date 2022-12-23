@@ -1,0 +1,8 @@
+{
+  "user_file_path": "/static/example_file1.csv",
+  "config_file_grimm": "/static/config_grim.json",
+  "alleles_names": ["A", "B", "C", "DRB1", "DQB1"],
+  "output_dir": "user_files",
+  "is_serology_data": false,
+  "races": {}
+}
