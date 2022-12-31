@@ -111,7 +111,7 @@ class LolBuilder:
             if self._weighted:
                 weights_list = np.zeros(2 * len(self._graph))
 
-        space = -np.ones(free, dtype=np.int)
+        space = -np.ones(free, dtype=np.int32)
 
         for edge in tqdm(self._graph, desc="(4/6) Create the neighbors list", disable=not self._verbose):
             left = map_node_to_number[edge.node1]
