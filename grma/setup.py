@@ -1,4 +1,4 @@
-import numpy as np
+# import numpy as np
 from setuptools import setup, Extension, find_packages
 from Cython.Build import cythonize
 
@@ -51,5 +51,5 @@ setup(
                       define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")])
         ]
     ),
-    include_dirs=[np.get_include()]
+    # include_dirs=[np.get_include()]
 )

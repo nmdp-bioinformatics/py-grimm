@@ -99,7 +99,7 @@ class DonorsMatching(object):
             donors.append(iid)
         return donors
 
-    def find_candidates(self, subclass: ClassMinusOne, genos: Iterator) -> None:
+    def find_candidates(self, subclass: ClassMinusOne, genos: Iterator):
         """
         Takes a subclass object and an iterator of patients' genotypes that has this subclass. \n
         Add to patients_graph all the genotypes candidates.
@@ -135,7 +135,7 @@ class DonorsMatching(object):
                         self._patients_graph[patient_id][candidate_id]['weight'][geno_num] = [probability,
                                                                                               similarity]
                     else:
-                        if candidate_id not in self._patients_graph:
+                        if not self._patients_graph.has_node(candidate_id):
                             self._patients_graph.add_node(candidate_id)
                         self._patients_graph.add_edge(patient_id, candidate_id,
                                                       weight={geno_num: [probability, similarity]})
