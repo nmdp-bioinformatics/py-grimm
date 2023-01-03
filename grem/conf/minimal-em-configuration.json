@@ -1,0 +1,58 @@
+{
+  "populations": [
+    "AAFA",
+    "CAU"
+  ],
+
+  "FULL_LOCI": "ABCQR",
+
+   "loci_map": {
+    "A": 1,
+    "B": 2,
+    "C": 3,
+    "DQB1": 4,
+    "DRB1": 5
+  },
+     "graph_files_path": "output/" ,
+    "node_csv_file": "nodes.csv",
+  "edges_csv_file": "edges.csv",
+  "info_node_csv_file": "info_node.csv",
+  "top_links_csv_file": "top_links.csv",
+  "imputation_in_file": "data/ct_mr_don_10.txt",
+  "Plan_B_Matrix": [
+            [[1, 2, 3, 4, 5]],
+            [[1, 2, 3], [4, 5]],
+            [[1], [2, 3], [4, 5]],
+            [[1, 2, 3], [4], [5]],
+            [[1], [2, 3], [4], [5]],
+            [[1], [2], [3], [4], [5]]
+        ],
+
+
+  "imputation_out_hap_freq_filename": "don.hap.freqs",
+  "freq_file": "output/hpf.csv",
+
+    "priority": {
+    "alpha": 0.4999999,
+    "eta": 0,
+    "beta": 1e-7,
+    "gamma": 1e-7,
+    "delta": 0.4999999
+  },
+
+  "number_of_results": 1000,
+
+  "freq_trim_threshold": 1e-5,
+
+  "epsilon": 1e-3,
+  "max_haplotypes_number_in_phase": 100,
+
+  "init_cutoff": 100,
+  "max_iterations": 50,
+  "logLikelihood_file": "log_likelihood.txt",
+  "memory_min_size": 100000000,
+  "memory_max_size": 600000000,
+  "num_threads": 1,
+  "run_just_SR_EM": false
+
+}

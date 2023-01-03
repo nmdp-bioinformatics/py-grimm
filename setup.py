@@ -61,7 +61,7 @@ setup(
     long_description_content_type="text/markdown",
     include_package_data=True,
     keywords="graph,em,family",
-    packages=find_packages(include=["gram", "grem", "grma"]),
+    packages=find_packages(include=["gram", "grem", "grma",  "grem.conf", "grem.data", "grem.EM"]),
     test_suite="tests",
     tests_require=test_requirements,
     url="https://github.com/nmdp-bioinformatics/py-grimm",
