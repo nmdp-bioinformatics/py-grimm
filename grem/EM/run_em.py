@@ -101,7 +101,7 @@ def run_em_def(conf_file = "../conf/minimal-em-configuration.json", sr_pop_name 
         count_by_prob = np.ones(pops_len)
 
         while not_converge and iteration < config["max_iteration"]:
-            print('itrer = ' + str(iteration))
+            print('iter = ' + str(iteration))
 
             iteration+=1
             """dict_hf = {}
