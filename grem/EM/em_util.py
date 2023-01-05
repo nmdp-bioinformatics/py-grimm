@@ -1,7 +1,6 @@
 #import matplotlib.pyplot as plt
 
 def is_full_haplo(hap, locus):
-    #locus = ['A', 'B', 'C', 'DRB1', 'DQB1']
     if all(loci in hap for loci in locus):
         return True
     return False

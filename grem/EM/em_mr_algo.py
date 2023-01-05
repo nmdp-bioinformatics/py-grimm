@@ -19,7 +19,6 @@ class algo_mr():
         self.max_size = config["memory_max"]
         self.min_size = config["memory_min"]
 
-        #self.plot_path = plot_p
 
 
 

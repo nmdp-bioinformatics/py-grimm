@@ -1,5 +1,4 @@
 import json
-import argparse
 import os
 import sys
 
@@ -10,7 +9,6 @@ from . import em_mr_algo
 from graph_generation import generate_neo4j_multi_hpf
 from . import runfile_em_mt
 import numpy as np
-import timeit
 import pathlib
 #import shutil
 
@@ -36,13 +34,11 @@ def run_em_def(conf_file = "../conf/minimal-em-configuration.json", sr_pop_name 
         "memory_min": json_conf.get("memory_min_size", 1000000),
         "max_iteration":  json_conf.get("max_iterations", 50),
         "just_SR": json_conf.get("run_just_SR_EM", False),
-
         "node_file": graph_files_path + json_conf.get("node_csv_file"),
         "top_links_file": graph_files_path + json_conf.get("top_links_csv_file"),
         "edges_file": graph_files_path + json_conf.get("edges_csv_file"),
         "info_nodes": graph_files_path +json_conf.get("info_node_csv_file")
-        #"KL_freq_file_to_compare": json_conf.get("KL_file_to_compare"),
-        #"KL_real_pop_size": json_conf.get("KL_real_size")
+
     }
 
 
@@ -55,11 +51,10 @@ def run_em_def(conf_file = "../conf/minimal-em-configuration.json", sr_pop_name 
     # Create output directory if it doesn't exist
     pathlib.Path('/'.join(config.get("freq_file").split('/')[:-1])).mkdir(parents=False, exist_ok=True)
     pathlib.Path(output_dir).mkdir(parents=False, exist_ok=True)
-    #pathlib.Path(photos_dir).mkdir(parents=False, exist_ok=True)
 
     ### em without races
     logL = -100
-    algo = em_haplotypes_algo.algo(config,  pop)#,  photos_dir + str(ls)  )
+    algo = em_haplotypes_algo.algo(config,  pop)
 
     eps, numH, num_saples = algo.create_guess()
 
@@ -82,11 +77,11 @@ def run_em_def(conf_file = "../conf/minimal-em-configuration.json", sr_pop_name 
         logL /= num_saples
         file_lo.write(str(iteration) + ' ' + str(logL/num_saples) + '\n')
         planB = True
-        if logL - last_logl <= 0.01:
+        if logL - last_logl <= 0.01 and iteration > 2:
             not_converge = False
 
     print(logL)
-    #algo.plots()
+
 
     """file_for_kl_mr = output_dir +  'SR_res' + ls + '.csv'
     count_file_for_kl_mr = sum(1 for line in open(config["freq_file"]))
@@ -95,17 +90,15 @@ def run_em_def(conf_file = "../conf/minimal-em-configuration.json", sr_pop_name 
     ### em - mr
     if not config["just_SR"]:
         eps = 0
-        algo = em_mr_algo.algo_mr(config , eps)#, photos_dir + str(ls)  )
+        algo = em_mr_algo.algo_mr(config , eps)
         eps = algo.create_eps()
         algo.create_guess()
 
         not_converge = True
-        planB = True #False
+        planB = True
         iteration = 0
         pops_len = len(config["pops"])
         count_by_prob = np.ones(pops_len)
-        race1 =  config["pops"][0]
-        race2 = config["pops"][1]
 
         while not_converge and iteration < config["max_iteration"]:
             print('itrer = ' + str(iteration))

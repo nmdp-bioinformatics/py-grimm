@@ -7,11 +7,10 @@ from .em_util import *
 sys.path.insert(0, os.path.join(".."))
 from grim.imputation.impute import Imputation
 from grim.imputation.impute import clean_up_gl
-#from imputation.imputegl import changeFormat
 
 class algo():
 
-    def __init__(self,config, pop):#, p_p):
+    def __init__(self,config, pop):
         self.freq_file = config["freq_file"]
         self.f_data = config["imputation_input_file"]
         self.imputation_res = config["imputation_out_hap_freq_file"]
@@ -24,9 +23,6 @@ class algo():
         self.max_size = config["memory_max"]
         self.min_size = config["memory_min"]
         self.cutoff_init = config["cutoff_init"]
-
-
-        #self.plot_path = p_p
 
 
     ## count number appearance of all haplotypes, and number appearance of each haplotype
