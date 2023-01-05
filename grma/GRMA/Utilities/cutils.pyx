@@ -72,6 +72,8 @@ cpdef np.ndarray[INT8, ndim=1] ccheck_similarity(np.ndarray[UINT16, ndim=1] pati
             elif patient_alleles1 == donor_alleles1:
                 count_similar += 1
 
+            # It isn't possible that donor0=patient1 and donor1=patient0,
+            # because the alleles are sorted.
             elif patient_alleles0 == donor_alleles1:
                 count_similar += 1
 

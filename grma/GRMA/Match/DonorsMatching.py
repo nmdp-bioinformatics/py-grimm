@@ -121,8 +121,8 @@ class DonorsMatching(object):
                                             genotypes_value_from_subclass, allele_range_to_check,
                                             matched_alleles)
             # remove candidates with less than 7 matches
-            candidates_to_iterate = drop_less_than_7_matches(genotypes_id_from_subclass, similarities)
-            for candidate_id, similarity in candidates_to_iterate:
+            geno_candidates_to_iterate = drop_less_than_7_matches(genotypes_id_from_subclass, similarities)
+            for gen_candidate_id, similarity in geno_candidates_to_iterate:
                 # iterate over all the patients with the genotype
                 for patient_id in self._patients_graph.neighbors(geno):
                     # patient's geno index
@@ -131,13 +131,13 @@ class DonorsMatching(object):
                     probability = self._patients_graph[geno][patient_id]["probability"]
 
                     # add the genotype id as a neighbor to the patient
-                    if candidate_id in self._patients_graph.adj[patient_id]:
-                        self._patients_graph[patient_id][candidate_id]['weight'][geno_num] = [probability,
-                                                                                              similarity]
+                    if gen_candidate_id in self._patients_graph.adj[patient_id]:
+                        self._patients_graph[patient_id][gen_candidate_id]['weight'][geno_num] = [probability,
+                                                                                                  similarity]
                     else:
-                        if not self._patients_graph.has_node(candidate_id):
-                            self._patients_graph.add_node(candidate_id)
-                        self._patients_graph.add_edge(patient_id, candidate_id,
+                        if not self._patients_graph.has_node(gen_candidate_id):
+                            self._patients_graph.add_node(gen_candidate_id)
+                        self._patients_graph.add_edge(patient_id, gen_candidate_id,
                                                       weight={geno_num: [probability, similarity]})
 
     def add_subclasses(self, genotype: HashableArray, subclasses: list[ClassMinusOne]) -> list[ClassMinusOne]:
