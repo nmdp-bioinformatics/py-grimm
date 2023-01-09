@@ -106,9 +106,9 @@ class BuildMatchingGraph:
                         count_donors += 1
 
                         # add id<->geno nodes to edgelist
-                        for HLA, probability in probability_dict.items():
-                            self._edges.append(Edge(HLA, last_id, probability / total_probability))
-                            self._edges.append(Edge(last_id, HLA, probability / total_probability))
+                        for HLA, geno_probability in probability_dict.items():
+                            self._edges.append(Edge(HLA, last_id, geno_probability / total_probability))
+                            self._edges.append(Edge(last_id, HLA, geno_probability / total_probability))
 
                         # initialize parameters
                         total_probability = 0

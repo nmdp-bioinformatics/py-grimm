@@ -54,6 +54,11 @@ class HashableArray:
     def __repr__(self):
         return str(self.arr)
 
+    def __eq__(self, other):
+        if not isinstance(other, HashableArray):
+            return False
+        return np.array_equal(self.arr, other.arr)
+
     def np(self):
         return self.arr
 

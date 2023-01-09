@@ -1,8 +1,15 @@
 import os
 import shutil
 import sys
+import time
 from os import PathLike
 from typing import Iterable, Union, Dict
+
+# With time calculation!!!
+# With time calculation!!!
+# With time calculation!!!
+# With time calculation!!!
+# With time calculation!!!
 
 import pandas as pd
 from grim.imputation.networkx_graph import Graph as GrimGraph
@@ -17,7 +24,8 @@ from GRMA.Utilities.utils import print_time
 def find_matches(imputation_filename: Union[str, PathLike], graph: Graph,
                  searchId: int, donors_info: Iterable[str],
                  threshold: float = 0.1, cutof: int = 50,
-                 verbose: bool = False, save_to_csv: bool = False) -> Dict[int, pd.DataFrame]:
+                 verbose: bool = False, save_to_csv: bool = False,
+                 calculate_time: bool = False):
     """
     The main function responsible for performing the matching.
     Note: for each patient, if a donor has been found as a
@@ -31,6 +39,7 @@ def find_matches(imputation_filename: Union[str, PathLike], graph: Graph,
     :param cutof: Maximum number of matches to return. default is 50.
     :param verbose: A boolean flag for whether to print the documentation. default is False
     :param save_to_csv: A boolean flag for whether to save the matching results into a csv file. default is False.
+    :param calculate_time: A boolean flag for whether to return the matching time for patient. default is False.
     If one wishes to save the results to csv files, a directory named 'Matching_Results_{searchId}' will be created in
     the working directory. If a directory by this name was already created, an error will be raised.
     Note: saving a pandas into a csv might take a couple of seconds
@@ -45,31 +54,48 @@ def find_matches(imputation_filename: Union[str, PathLike], graph: Graph,
     g_m = DonorsMatching(graph)
 
     # create patients graph and find all candidates
-    patients = g_m.create_patients_graph_and_find_candidates(imputation_filename, verbose)
+    start_build_graph = time.time()
+    subclasses_by_patient = g_m.create_patients_graph(imputation_filename)
+    patients = list(g_m.patients.keys())
     if verbose:
         print_time("Created patients graph")
+    end_build_graph = time.time()
 
     # the returned dictionary. {patient ID: pd.DataFrame(matches + features)}
     patients_results = {patient: None for patient in patients}
 
+    avg_build_time = (end_build_graph - start_build_graph) / len(patients)
+
     # loop over all patients
-    for j, pat in enumerate(patients.keys()):
+    for j, pat in enumerate(patients):
         if verbose:
             print_time(f"Searching matches for {pat}")
 
+        start = time.time()
         matched = set()  # set of donors ID that have already matched for this patient
-        count_matches = 0
         results_df = _init_results_df(donors_info)  # initialize the df according to the given fields
 
-        # loop over possible mismatches: 0, 1, 2, 3.
-        for mismatches in range(4):
-            matched, count, results_df = g_m.score_matches(mismatches, results_df, donors_info,
-                                                           pat, threshold, cutof, matched)
-            count_matches += count
-            if verbose:
-                print_time(f"({mismatches} MMs) Found {count} matches")
+        g_m.add_perfect_genos(pat)
+        matched, count, results_df = g_m.score_matches(0, results_df, donors_info,
+                                                       pat, threshold, cutof, matched)
+        if len(matched) < cutof:
+            g_m.find_geno_candidates_by_subclasses(subclasses_by_patient[pat], verbose)
 
-        patients_results[pat] = results_df
+            # loop over possible mismatches: 1, 2, 3.
+            for mismatches in range(1, 4):
+                print(f"\nscore: {mismatches}\n")
+                matched, count, results_df = g_m.score_matches(mismatches, results_df, donors_info,
+                                                               pat, threshold, cutof, matched)
+                if verbose:
+                    print_time(f"({mismatches} MMs) Found {count} matches")
+
+        end = time.time()
+        my_time = end - start + avg_build_time
+
+        if calculate_time:
+            patients_results[pat] = (results_df, my_time)
+        else:
+            patients_results[pat] = results_df
 
         if save_to_csv:
             # save results to csv
@@ -86,7 +112,7 @@ def matching(filepath: Union[str, PathLike], grim_graph: GrimGraph, match_graph:
              save_imputation: Union[bool, str, PathLike] = False,
              donors_info: Union[Iterable[str], None] = None, searchId: int = 0,
              threshold: float = 0.1, cutof: int = 50,
-             verbose: bool = False, save_to_csv: bool = False) -> Dict[int, pd.DataFrame]:
+             verbose: bool = False, save_to_csv: bool = False):
     """
     A function that performs the patients imputation with the matching.
     The imputation is performed with GRIM algorithm.

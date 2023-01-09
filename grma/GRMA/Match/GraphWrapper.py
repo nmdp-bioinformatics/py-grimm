@@ -12,10 +12,16 @@ NODES_TYPES = Union[int, HashableArray]
 
 class Graph(object):
     """Graph wrapper class for LOLGraph"""
-    __slots__ = "_map_node_to_number", "_graph"
+    __slots__ = "_map_node_to_number", "_graph", "_map_geno_to_id", "all_genos"
 
     def __init__(self, lol_properties: dict):
         self._map_node_to_number = lol_properties["map_node_to_number"]
+
+        map_number_to_arr_node = lol_properties["map_number_to_arr_node"]
+        arrays_start = lol_properties["arrays_start"]
+        self._map_geno_to_id = {HashableArray(map_number_to_arr_node[i]): i + arrays_start
+                                for i in range(map_number_to_arr_node.shape[0])}
+
         self._graph = LolGraph(index_list=lol_properties["index_list"],
                                neighbors_list=lol_properties["neighbors_list"],
                                weights_list=lol_properties["weights_list"],
@@ -60,6 +66,11 @@ class Graph(object):
         if self._graph.is_weighted():
             return zip(*(neighbors_list_values, weights_list))
         return neighbors_list_values
+
+    def geno_to_id(self, geno):
+        if geno in self._map_geno_to_id:
+            return self._map_geno_to_id[geno]
+        return None
 
     def neighbors_2nd(self, node):
         node_num = self._map_node_to_number[node]
