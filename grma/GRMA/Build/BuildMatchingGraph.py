@@ -28,16 +28,23 @@ class BuildMatchingGraph:
 
     def _create_classes_edges(self, geno, class_, layers):
         int_class = tuple_geno_to_int(class_)
-        # map class to psudo-class
-        mapped_class = layers["CLASS"].get(int_class, (len(layers["CLASS"]) + 1,))
 
-        self._edges.append(Edge(mapped_class, geno, 0))
+        self._edges.append(Edge(int_class, geno, 0))
 
         # check if the class node was created
-        # if so, do not need to create subclasses
         if int_class not in layers["CLASS"]:
-            layers["CLASS"][int_class] = mapped_class
+            layers["CLASS"].add(int_class)
             self._create_subclass_edges(class_, int_class, layers)
+
+        # map class to psudo-class
+        # mapped_class = layers["CLASS"].get(int_class, (len(layers["CLASS"]) + 1,))
+        #
+        # self._edges.append(Edge(mapped_class, geno, 0))
+        #
+        # # if so, do not need to create subclasses
+        # if int_class not in layers["CLASS"]:
+        #     layers["CLASS"][int_class] = mapped_class
+        #     self._create_subclass_edges(class_, int_class, layers)
 
     def _create_subclass_edges(self, class_, int_class, layers):
         """
@@ -57,15 +64,14 @@ class BuildMatchingGraph:
                 subclass_alleles.add(tuple_geno_to_int(tuple(class_[0: i - 1] + (0, class_[i - 1]) + class_[i + 1:])))
 
         # add subclass->class edges
-        cls_ = layers["CLASS"][int_class]
         for sub in subclass_alleles:
-            self._edges.append(Edge(sub, cls_, 0))
+            self._edges.append(Edge(sub, int_class, 0))
             if sub not in layers["SUBCLASS"]:
                 layers["SUBCLASS"].add(sub)
 
     def _save_graph_as_edges(self, path_to_donors_directory: str | os.PathLike):
         """
-        Proccess donors imputation files and save them to self._graph as an edgelist
+        Process donors imputation files and save them to self._graph as an edgelist
         """
         print_time("(0/6) Build edgelist")
         files = sorted(list(os.listdir(path_to_donors_directory)))
@@ -74,7 +80,7 @@ class BuildMatchingGraph:
         layers = {
             "ID": set(),
             "GENOTYPE": set(),
-            "CLASS": {},  # map classes to mp.uint32 objects
+            "CLASS": set(),  # map classes to mp.uint32 objects
             "SUBCLASS": set()
         }
         count_donors = 0
@@ -139,8 +145,6 @@ class BuildMatchingGraph:
         count_donors += 1
         if self._verbose:
             print(f"Total number of donors:{count_donors}")
-
-        layers["CLASS"] = set(layers["CLASS"].values())
 
         # create graph's dict-representation of LOL
         self._graph = LolBuilder(directed=True, weighted=True, verbose=self._verbose).build(self._edges, layers)

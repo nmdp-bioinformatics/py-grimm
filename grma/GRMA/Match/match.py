@@ -5,12 +5,6 @@ import time
 from os import PathLike
 from typing import Iterable, Union, Dict
 
-# With time calculation!!!
-# With time calculation!!!
-# With time calculation!!!
-# With time calculation!!!
-# With time calculation!!!
-
 import pandas as pd
 from grim.imputation.networkx_graph import Graph as GrimGraph
 
@@ -19,6 +13,41 @@ from GRMA.Match import Graph as MatchingGraph
 from GRMA.Match.DonorsMatching import DonorsMatching, _init_results_df
 from GRMA.Match.GraphWrapper import Graph
 from GRMA.Utilities.utils import print_time
+
+
+def search_in_levels(patient_id, g_m, verbose, donors_info, threshold, cutof, subclasses, classes):
+    """"
+    We should add documentation to this
+    """
+    if verbose:
+        print_time(f"Searching matches for {patient_id}")
+
+    matched = set()  # set of donors ID that have already matched for this patient
+    results_df = _init_results_df(donors_info)  # initialize the df according to the given fields
+
+    # We can give to this function the genotypes instead
+    g_m.find_candidates_by_genos(patient_id)
+    matched, count, results_df = g_m.score_matches(0, results_df, donors_info, patient_id, threshold, cutof, matched)
+
+    if len(matched) >= cutof:
+        return results_df
+
+    g_m.find_geno_candidates_by_classes(classes, verbose)
+    matched, count, results_df = g_m.score_matches(1, results_df, donors_info, patient_id, threshold, cutof, matched)
+
+    if len(matched) >= cutof:
+        return results_df
+
+    g_m.find_geno_candidates_by_subclasses(subclasses, verbose)
+
+    # loop over possible mismatches: 1, 2, 3.
+    for mismatches in range(1, 4):
+        matched, count, results_df = g_m.score_matches(mismatches, results_df, donors_info,
+                                                       patient_id, threshold, cutof, matched)
+        if verbose:
+            print_time(f"({mismatches} MMs) Found {count} matches")
+
+    return results_df
 
 
 def find_matches(imputation_filename: Union[str, PathLike], graph: Graph,
@@ -55,8 +84,9 @@ def find_matches(imputation_filename: Union[str, PathLike], graph: Graph,
 
     # create patients graph and find all candidates
     start_build_graph = time.time()
-    subclasses_by_patient = g_m.create_patients_graph(imputation_filename)
+    subclasses_by_patient, classes_by_patient = g_m.create_patients_graph(imputation_filename)
     patients = list(g_m.patients.keys())
+
     if verbose:
         print_time("Created patients graph")
     end_build_graph = time.time()
@@ -66,44 +96,34 @@ def find_matches(imputation_filename: Union[str, PathLike], graph: Graph,
 
     avg_build_time = (end_build_graph - start_build_graph) / len(patients)
 
-    # loop over all patients
-    for j, pat in enumerate(patients):
+    for patient in patients:
+        # For each patient we search matches in the donor graph.
+        # First we will look for perfect matches - only genotypes, then 9 matches - classes,
+        # and then 7-8 matches - subclasses.
         if verbose:
-            print_time(f"Searching matches for {pat}")
+            print_time(f"Searching matches for {patient}")
 
         start = time.time()
-        matched = set()  # set of donors ID that have already matched for this patient
-        results_df = _init_results_df(donors_info)  # initialize the df according to the given fields
 
-        g_m.add_perfect_genos(pat)
-        matched, count, results_df = g_m.score_matches(0, results_df, donors_info,
-                                                       pat, threshold, cutof, matched)
-        if len(matched) < cutof:
-            g_m.find_geno_candidates_by_subclasses(subclasses_by_patient[pat], verbose)
-
-            # loop over possible mismatches: 1, 2, 3.
-            for mismatches in range(1, 4):
-                print(f"\nscore: {mismatches}\n")
-                matched, count, results_df = g_m.score_matches(mismatches, results_df, donors_info,
-                                                               pat, threshold, cutof, matched)
-                if verbose:
-                    print_time(f"({mismatches} MMs) Found {count} matches")
+        subclasses = subclasses_by_patient[patient]
+        classes = classes_by_patient[patient]
+        results_df = search_in_levels(patient, g_m, verbose, donors_info, threshold, cutof, subclasses, classes)
 
         end = time.time()
-        my_time = end - start + avg_build_time
+        patient_time = end - start + avg_build_time
 
         if calculate_time:
-            patients_results[pat] = (results_df, my_time)
+            patients_results[patient] = (results_df, patient_time)
         else:
-            patients_results[pat] = results_df
+            patients_results[patient] = results_df
 
         if save_to_csv:
             # save results to csv
-            results_df.to_csv(os.path.join(f"Matching_Results_{searchId}", f"Patient_{pat}.csv"), index=True,
+            results_df.to_csv(os.path.join(f"Matching_Results_{searchId}", f"Patient_{patient}.csv"), index=True,
                               float_format='%.2f')
             if verbose:
-                print_time(f"Saved Matching results for {pat} in "
-                           f"{os.path.join(f'Matching_Results_{searchId}', f'Patient_{pat}.csv')}")
+                print_time(f"Saved Matching results for {patient} in "
+                           f"{os.path.join(f'Matching_Results_{searchId}', f'Patient_{patient}.csv')}")
 
     return patients_results
 

@@ -73,12 +73,14 @@ class LolBuilder:
             map_number_to_arr_node[i, :] = geno.np()
             free += 1
 
-        # map classes to lol-id. will be removed later.
+        # map classes to lol-id.
         for clss in tqdm(layers["CLASS"], desc="(1.4) Map nodes to internal numbers", disable=not self._verbose):
+            # Here also add dictionary {class: id_in_graph}
             map_node_to_number[clss] = free
             free += 1
 
         print_time('(2/6) Create the opposite map')
+        # This map is for the donors Ids only.
         map_number_to_num_node = np.array(
             [x for x, y in tqdm(map_node_to_number.items(), desc="(2/6) Create the opposite map",
                                 disable=not self._verbose) if y < subclasses_start], dtype=np.uint32)
@@ -128,13 +130,6 @@ class LolBuilder:
             if not self._directed and left != right:
                 self._add_weights_and_neighbors(right, left, space, neighbors_list, index_list,
                                                 weight=weight, weights_list=weights_list)
-
-        # remove genotype and class layers.
-        # these layers should not be accessed from outside.
-        for geno in layers["GENOTYPE"]:
-            del map_node_to_number[geno]
-        for clss in layers["CLASS"]:
-            del map_node_to_number[clss]
 
         del self._graph
         del layers
