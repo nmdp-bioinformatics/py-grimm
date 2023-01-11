@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from GRMA.Utilities.cutils import chash
+from grma.utilities.cutils import chash
 
 
 @dataclass

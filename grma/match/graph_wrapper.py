@@ -6,8 +6,8 @@ from typing import Union
 
 import numpy as np
 
-from GRMA.Utilities.geno_representation import HashableArray
-from GRMA.Match.lol_graph import LolGraph
+from grma.utilities.geno_representation import HashableArray
+from grma.match.lol_graph import LolGraph
 
 NODES_TYPES = Union[int, HashableArray]
 

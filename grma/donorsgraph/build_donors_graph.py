@@ -6,11 +6,11 @@ from typing import Union, List
 
 from tqdm import tqdm
 
-from GRMA.Build import Edge
-from GRMA.Build.create_lol import LolBuilder
-from GRMA.Match.GraphWrapper import Graph
-from GRMA.Utilities.geno_representation import HashableArray
-from GRMA.Utilities.utils import gl_string_to_integers, tuple_geno_to_int, print_time
+from grma.donorsgraph import Edge
+from grma.donorsgraph.create_lol import LolBuilder
+from grma.match.graph_wrapper import Graph
+from grma.utilities.geno_representation import HashableArray
+from grma.utilities.utils import gl_string_to_integers, tuple_geno_to_int, print_time
 
 CLASS_I_END = 6
 
@@ -73,7 +73,7 @@ class BuildMatchingGraph:
         """
         Process donors imputation files and save them to self._graph as an edgelist
         """
-        print_time("(0/6) Build edgelist")
+        print_time("(0/6) donorsgraph edgelist")
         files = sorted(list(os.listdir(path_to_donors_directory)))
 
         # dict of sets of nodes in each layer
@@ -158,7 +158,7 @@ class BuildMatchingGraph:
         Save a pickle of the graph.
         To get the graph after pickling use:
 
-        >>> from GRMA.Match.GraphWrapper import Graph
+        >>> from GRMA.match.GraphWrapper import Graph
         >>> Graph.from_pickle(path)
 
         :param path: A path to save the pickled object

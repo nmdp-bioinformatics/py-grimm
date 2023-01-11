@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Iterable
 
-from GRMA.Utilities.cutils import cdrop_less_than_7_matches, ccheck_similarity
+from grma.utilities.cutils import cdrop_less_than_7_matches, ccheck_similarity
 
 from collections.abc import Sequence
 

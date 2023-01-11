@@ -4,17 +4,17 @@ from typing import Union
 
 from grim.grim import impute_instance
 from grim.imputation.networkx_graph import Graph
-from GRMA.Grim.configuration import CONFIG
+from grma.imputation.configuration import CONFIG
 
 
-def run_GRIMM(inputFile: Union[str, os.PathLike], graph: Graph,
-              searchId: int, output_dir: Union[str, os.PathLike], save_imputation: Union[bool, str, os.PathLike]):
+def run_GRIMM(input_file: Union[str, os.PathLike], graph: Graph,
+              search_id: int, output_dir: Union[str, os.PathLike], save_imputation: Union[bool, str, os.PathLike]):
     """
     A function for running the grim imputation algorithm.
 
-    :param inputFile: donors filepath
+    :param input_file: donors filepath
     :param graph: A Graph object from grim.imputation.networkx_graph
-    :param searchId: An integer identification of the search.
+    :param search_id: An integer identification of the search.
     :param output_dir: A PathLike for the directory of the output files of grim.
     :param save_imputation: A flag for whether to save the imputation results.
     Accepts boolean/str/PathLike values - False will not save a file,
@@ -25,13 +25,13 @@ def run_GRIMM(inputFile: Union[str, os.PathLike], graph: Graph,
     """
 
     # validate the input file location
-    if not (os.path.exists(inputFile) and os.path.isfile(inputFile)):
-        raise FileNotFoundError(f"inputFile: {inputFile} for grim cannot be fount")
+    if not (os.path.exists(input_file) and os.path.isfile(input_file)):
+        raise FileNotFoundError(f"inputFile: {input_file} for grim cannot be fount")
 
     # validata the given input of imputation_path
     if isinstance(save_imputation, bool):
-        imputation_path = os.path.join(output_dir, f"imputations{searchId}.csv") if not save_imputation \
-            else f"imputations{searchId}.csv"
+        imputation_path = os.path.join(output_dir, f"imputations{search_id}.csv") if not save_imputation \
+            else f"imputations{search_id}.csv"
     else:
         splited = os.path.split(save_imputation)
         if os.path.exists(splited[0]) and os.path.isdir(splited[1]):
@@ -39,11 +39,11 @@ def run_GRIMM(inputFile: Union[str, os.PathLike], graph: Graph,
         else:
             warnings.warn(f"Cannot find the given directory of the imputation file {save_imputation}. "
                           f"DO NOT SAVE THE IMPUTATION FILE.", ResourceWarning)
-            imputation_path = os.path.join(output_dir, f"imputations{searchId}.csv")
+            imputation_path = os.path.join(output_dir, f"imputations{search_id}.csv")
 
     # set the rest of the configuration
     config = CONFIG
-    config["imputation_input_file"] = inputFile
+    config["imputation_input_file"] = input_file
     config["imputation_out_umug_freq_file"] = imputation_path
     config["imputation_out_umug_pops_file"] = os.path.join(output_dir, f"out.umug.pops")
     config["imputation_out_hap_freq_file"] = os.path.join(output_dir, f"out.freqs")

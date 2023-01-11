@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from collections.abc import Iterator, Sequence
 from typing import List, Tuple, Set, Iterable, Dict
 
@@ -8,9 +6,9 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from GRMA.Match.GraphWrapper import Graph
-from GRMA.Utilities.geno_representation import HashableArray, ClassMinusOne
-from GRMA.Utilities.utils import donor_mismatch_format, \
+from grma.match.graph_wrapper import Graph
+from grma.utilities.geno_representation import HashableArray, ClassMinusOne
+from grma.utilities.utils import donor_mismatch_format, \
     drop_less_than_7_matches, check_similarity, gl_string_to_integers, tuple_geno_to_int, print_time
 
 DONORS_DB: pd.DataFrame = pd.DataFrame()

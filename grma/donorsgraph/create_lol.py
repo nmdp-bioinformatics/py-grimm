@@ -5,8 +5,8 @@ from tqdm import tqdm
 import gc
 from collections import OrderedDict
 
-from GRMA.Build import Edge
-from GRMA.Utilities.utils import print_time
+from grma.donorsgraph import Edge
+from grma.utilities.utils import print_time
 
 
 class LolBuilder:

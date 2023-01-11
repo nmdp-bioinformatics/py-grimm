@@ -8,11 +8,11 @@ from typing import Iterable, Union, Dict
 import pandas as pd
 from grim.imputation.networkx_graph import Graph as GrimGraph
 
-from GRMA.Grim import run_GRIMM
-from GRMA.Match import Graph as MatchingGraph
-from GRMA.Match.DonorsMatching import DonorsMatching, _init_results_df
-from GRMA.Match.GraphWrapper import Graph
-from GRMA.Utilities.utils import print_time
+from grma.imputation import run_GRIMM
+from grma.match import Graph as MatchingGraph
+from grma.match.donors_matching import DonorsMatching, _init_results_df
+from grma.match.graph_wrapper import Graph
+from grma.utilities.utils import print_time
 
 
 def search_in_levels(patient_id, g_m, donors_info, threshold, cutof, subclasses, classes):
@@ -56,7 +56,7 @@ def find_matches(imputation_filename: Union[str, PathLike], graph: Graph,
     match in an early stage (0, 1, or 2 mm), he will not be searched as a match for the further mismatches.
 
     :param imputation_filename: Path to the output file of the imputation made by grim.
-    :param graph: A Graph object from GRMA.Match
+    :param graph: A Graph object from GRMA.match
     :param search_id: An integer identification of the search. default is 0.
     :param donors_info: An iterable of fields from the database to include in the results. default is None.
     :param threshold: Minimal score value for a valid match. default is 0.1.
@@ -134,7 +134,7 @@ def matching(filepath: Union[str, PathLike], grim_graph: GrimGraph, match_graph:
 
     :param filepath: path to patients file.
     :param grim_graph: A Graph object from grim.imputation.networkx_graph
-    :param match_graph: A Graph object from GRMA.Match
+    :param match_graph: A Graph object from GRMA.match
     :param save_imputation: A flag for whether to save the imputation results. default is False.
     Accepts boolean/str/PathLike values - False will not save a file,
     True will save a file named 'imputation{searchId}.csv' in the working directory.
