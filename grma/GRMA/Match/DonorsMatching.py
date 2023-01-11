@@ -11,7 +11,7 @@ from tqdm import tqdm
 from GRMA.Match.GraphWrapper import Graph
 from GRMA.Utilities.geno_representation import HashableArray, ClassMinusOne
 from GRMA.Utilities.utils import donor_mismatch_format, \
-    drop_less_than_7_matches, check_similarity, gl_string_to_integers, tuple_geno_to_int
+    drop_less_than_7_matches, check_similarity, gl_string_to_integers, tuple_geno_to_int, print_time
 
 DONORS_DB: pd.DataFrame = pd.DataFrame()
 ZEROS: HashableArray = HashableArray([0])
@@ -51,12 +51,13 @@ def _init_results_df(donors_info):
 
 class DonorsMatching(object):
     """DonorsMatching class is in charge of the matching process"""
-    __slots__ = "_graph", "_patients_graph", "patients"
+    __slots__ = "_graph", "_patients_graph", "patients", "verbose"
 
-    def __init__(self, graph: Graph):
+    def __init__(self, graph: Graph, verbose: bool = False):
         self._graph: Graph = graph
         self._patients_graph: nx.DiGraph = nx.DiGraph()
         self.patients: dict[int, Sequence[int]] = {}
+        self.verbose = verbose
 
     def print_most_common_genotype(self, don_id: int, pat_geno: Sequence[int]) -> str:
         """Takes a donor ID and a genotype. \n
@@ -83,52 +84,24 @@ class DonorsMatching(object):
 
         return probs
 
-    def find_genotype_from_subclass(self, sub: int) -> np.ndarray:
+    def __find_genotype_candidates_from_subclass(self, sub: int) -> np.ndarray:
         """Takes an integer subclass.
         Returns the genotypes which are connected to it in the graph"""
         return self._graph.neighbors_2nd(sub)
 
-    # TODO Why have this????
-    def find_genotype_from_class(self, clss: int) -> zip[tuple[int, float]] | list[int]:
+    def __find_genotype_candidates_from_class(self, clss: int) -> tuple[np.ndarray, np.ndarray]:
         """Takes an integer subclass.
-        Returns the genotypes which are connected to it in the graph"""
+        Returns the genotypes (ids and values) which are connected to it in the graph"""
         return self._graph.class_neighbors(clss)
 
-    def find_donor_from_geno(self, geno_id: int) -> Sequence[int]:
-        """Get the LOL ID of a genotype.
+    def __find_donor_from_geno(self, geno_id: int) -> Sequence[int]:
+        """Gets the LOL ID of a genotype.
         Return its neighbors - all the donors that has this genotype."""
-        # TODO - change it to something more efficient
-        donors = []
-        for iid, w in self._graph.neighbors(geno_id, search_lol_id=True):
-            donors.append(iid)
-        return donors
+        ids, _ = zip(*self._graph.neighbors(geno_id, search_lol_id=True))
+        return list(ids)
 
-    def add_class_candidates(self, clss: int, genos):
-        """
-        clss: the class we want to add its candidates
-        genos: the patient's genotypes which might be match
-
-        Takes a class int and an iterator of patients' genotypes that has this class. \n
-        Add to patients_graph all the genotypes candidates.
-        """
-
-        # check only the locuses that are not certain to match
-        # class I appearances: 3 locuses = 6 alleles = 23/24 digits
-        # class II appearances: 2 locuses = 4 alleles = 15/16 digits
-        if len(str(clss)) > 20:
-            # clss is class I, so checks the alleles of class II
-            allele_range_to_check = np.array([6, 8], dtype=np.uint8)
-            matched_alleles: int = 6
-        else:
-            # clss is class II, so checks the alleles of class I
-            allele_range_to_check = np.array([0, 2, 4], dtype=np.uint8)
-            matched_alleles: int = 4
-
-        genotypes_ids, genotypes_values = self.find_genotype_from_class(clss)
-        self.add_matched_genos_to_graph(genos, genotypes_values, genotypes_ids, allele_range_to_check, matched_alleles)
-
-    def add_matched_genos_to_graph(self, genos, genotypes_values, genotypes_ids,
-                                   allele_range_to_check, matched_alleles):
+    def __add_matched_genos_to_graph(self, genos: Iterator, genotypes_ids: np.ndarray, genotypes_values: np.ndarray,
+                                     allele_range_to_check: np.ndarray, matched_alleles: int):
         for geno in genos:
             # check similarity between geno and all the candidates
             similarities = check_similarity(geno.np(),
@@ -153,72 +126,7 @@ class DonorsMatching(object):
                         self._patients_graph.add_edge(patient_id, geno_candidate_id,
                                                       weight={geno_num: [probability, similarity]})
 
-    def find_candidates_by_genos(self, patient_id):
-        """This function gets a patient id, and adds his genotypes as candidates to the graph.
-        We know these candidates are "perfect" - 10 matches - because the user has exactly these genotypes.
-        """
-        genos = self._patients_graph.predecessors(patient_id)
-        for geno in genos:
-            geno_num = self._patients_graph[geno][patient_id]["geno_num"]  # patient's geno index
-            probability = self._patients_graph[geno][patient_id]["probability"]  # patient's geno probability
-
-            geno_id = self._graph.get_node_id(geno)
-            if not geno_id:
-                continue
-
-            # This has to be a new edge, because this is the first level (searching by genos),
-            # and each patient connect only to his own genos, so we wouldn't override the weight dict.
-            self._patients_graph.add_edge(patient_id, geno_id, weight={geno_num: [probability, 10]})
-
-    def add_subclass_candidates(self, subclass: ClassMinusOne, genos: Iterator):
-        """
-        subclass: the subclass we want to add its candidates
-        genos: the patient's genotypes which might be match
-
-        Takes a subclass object and an iterator of patients' genotypes that has this subclass. \n
-        Add to patients_graph all the genotypes candidates.
-        """
-        # check only the locuses that are not certain to match
-        if subclass.class_num == 0:
-            allele_range_to_check = np.array([6, 8, subclass.allele_num], dtype=np.uint8)
-        else:
-            allele_range_to_check = np.array([0, 2, 4, subclass.allele_num], dtype=np.uint8)
-
-        # number of alleles that already match due to match in subclass
-        matched_alleles: int = (ALLELES_IN_CLASS_II if subclass.class_num == 1 else ALLELES_IN_CLASS_I) - 2
-
-        # get all candidates
-        genotypes_id_from_subclass, genotypes_value_from_subclass = self.find_genotype_from_subclass(subclass.subclass)
-        # self.add_matched_genos_to_graph(genos, genotypes_value_from_subclass, genotypes_id_from_subclass,
-        #                                 allele_range_to_check, matched_alleles)
-
-        for geno in genos:
-            # check similarity between geno and all the candidates
-            similarities = check_similarity(geno.np(),
-                                            genotypes_value_from_subclass, allele_range_to_check,
-                                            matched_alleles)
-
-            candidates_to_iterate = drop_less_than_7_matches(genotypes_id_from_subclass, similarities)
-            for geno_candidate_id, similarity in candidates_to_iterate:
-                # iterate over all the patients with the genotype
-                for patient_id in self._patients_graph.neighbors(geno):
-                    # patient's geno index (the number of the geno in the imputation file)
-                    geno_num = self._patients_graph[geno][patient_id]["geno_num"]
-                    # patient's geno probability
-                    probability = self._patients_graph[geno][patient_id]["probability"]
-
-                    # add the genotype id as a neighbor to the patient
-                    if geno_candidate_id in self._patients_graph.adj[patient_id]:
-                        self._patients_graph[patient_id][geno_candidate_id]['weight'][geno_num] = [probability,
-                                                                                                   similarity]
-                    else:
-                        if not self._patients_graph.has_node(geno_candidate_id):
-                            self._patients_graph.add_node(geno_candidate_id)
-                        self._patients_graph.add_edge(patient_id, geno_candidate_id,
-                                                      weight={geno_num: [probability, similarity]})
-
-
-    def classes_and_subclasses_from_genotype(self, genotype: HashableArray):
+    def __classes_and_subclasses_from_genotype(self, genotype: HashableArray):
         subclasses = []
         classes = [genotype[:ALLELES_IN_CLASS_I], genotype[ALLELES_IN_CLASS_I:]]
         num_of_alleles_in_class = [ALLELES_IN_CLASS_I, ALLELES_IN_CLASS_II]
@@ -308,7 +216,7 @@ class DonorsMatching(object):
             self._patients_graph.add_edge(geno, patient_id, probability=0, geno_num=index)
 
             # add subclasses alleles
-            classes, subclasses = self.classes_and_subclasses_from_genotype(geno)
+            classes, subclasses = self.__classes_and_subclasses_from_genotype(geno)
 
             subclasses_by_patient[patient_id] = subclasses_by_patient[patient_id].union(subclasses)
             classes_by_patient[patient_id] = classes_by_patient[patient_id].union(classes)
@@ -321,17 +229,64 @@ class DonorsMatching(object):
         # return subclasses_by_patient
         return subclasses_by_patient, classes_by_patient
 
-    def find_geno_candidates_by_subclasses(self, subclasses, verbose: bool):
-        for subclass in tqdm(subclasses, desc="finding matching candidates", disable=not verbose):
+    def find_geno_candidates_by_subclasses(self, subclasses):
+        for subclass in tqdm(subclasses, desc="finding subclasses matching candidates", disable=not self.verbose):
             if self._graph.in_nodes(subclass.subclass):
-                # Send the subclass and the genotypes of the patients that the subclass belong to
-                self.add_subclass_candidates(subclass, self._patients_graph.neighbors(subclass))
+                patient_genos = self._patients_graph.neighbors(subclass)  # The patient's genotypes which might be match
+                genotypes_id, genotypes_value = self.__find_genotype_candidates_from_subclass(subclass.subclass)
 
-    def find_geno_candidates_by_classes(self, classes, verbose: bool):
-        for clss in tqdm(classes, desc="finding matching candidates", disable=not verbose):
+                # Checks only the locuses that are not certain to match
+                if subclass.class_num == 0:
+                    allele_range_to_check = np.array([6, 8, subclass.allele_num], dtype=np.uint8)
+                else:
+                    allele_range_to_check = np.array([0, 2, 4, subclass.allele_num], dtype=np.uint8)
+
+                # number of alleles that already match due to match in subclass
+                matched_alleles: int = (ALLELES_IN_CLASS_II if subclass.class_num == 1 else ALLELES_IN_CLASS_I) - 2
+
+                # Compares the candidate to the patient's genotypes, and adds the match geno candidates to the graph.
+                self.__add_matched_genos_to_graph(patient_genos, genotypes_id, genotypes_value,
+                                                  allele_range_to_check, matched_alleles)
+
+    def find_geno_candidates_by_classes(self, classes):
+        for clss in tqdm(classes, desc="finding classes matching candidates", disable=not self.verbose):
             if self._graph.in_nodes(clss):
+                patient_genos = self._patients_graph.neighbors(clss)  # The patient's genotypes which might be match
+                genotypes_ids, genotypes_values = self.__find_genotype_candidates_from_class(clss)
+
+                # Checks only the locuses that are not certain to match (the locuses of the other class)
+                # Class I appearances: 3 locuses = 6 alleles = 23/24 digits
+                # Class II appearances: 2 locuses = 4 alleles = 15/16 digits
+                if len(str(clss)) > 20:
+                    allele_range_to_check = np.array([6, 8], dtype=np.uint8)
+                    matched_alleles: int = 6
+                else:
+                    allele_range_to_check = np.array([0, 2, 4], dtype=np.uint8)
+                    matched_alleles: int = 4
+
+                # Compares the candidate to the patient's genotypes, and adds the match geno candidates to the graph.
+                self.__add_matched_genos_to_graph(patient_genos, genotypes_ids, genotypes_values,
+                                                  allele_range_to_check, matched_alleles)
+
                 # Send the class and the genotypes of the patients that the class belong to
-                self.add_class_candidates(clss, self._patients_graph.neighbors(clss))
+                # self.__add_class_candidates(clss, self._patients_graph.neighbors(clss))
+
+    def find_geno_candidates_by_genotypes(self, patient_id: int):
+        """This function gets a patient id, and adds his genotypes as candidates to the graph.
+        We know these candidates are "perfect" - 10 matches - because the user has exactly these genotypes.
+        """
+        genos = self._patients_graph.predecessors(patient_id)
+        for geno in genos:
+            geno_num = self._patients_graph[geno][patient_id]["geno_num"]  # patient's geno index
+            probability = self._patients_graph[geno][patient_id]["probability"]  # patient's geno probability
+
+            geno_id = self._graph.get_node_id(geno)
+            if not geno_id:
+                continue
+
+            # This has to be a new edge, because this is the first level (searching by genos),
+            # and each patient connect only to his own genos, so we wouldn't override the weight dict.
+            self._patients_graph.add_edge(patient_id, geno_id, weight={geno_num: [probability, 10]})
 
     def score_matches(self, mismatch: int, results_df: pd.DataFrame, donors_info: Iterable[str],
                       patient: int, threshold: float, cutof: int,
@@ -363,7 +318,7 @@ class DonorsMatching(object):
 
                 # add the probabilities multiplication of the patient and all the donors that has this genotype
                 # to their matching probabilities.
-                for donor in self.find_donor_from_geno(hla_id):
+                for donor in self.__find_donor_from_geno(hla_id):
                     donor_prob = self._graph.get_edge_data(node1=hla_id, node2=donor, node1_id=True)
                     if donor in patient_scores:
                         patient_scores[donor][0] += prob * donor_prob
@@ -394,13 +349,17 @@ class DonorsMatching(object):
             if len(matched) >= cutof:
                 break
             matched.add(donor)
-            self.append_matching_donor(add_donors, donors_info, patient, donor, score * 100, mismatch)
+            self.__append_matching_donor(add_donors, donors_info, patient, donor, score * 100, mismatch)
 
         results_df = pd.concat([results_df, pd.DataFrame(add_donors)], ignore_index=True)
+
+        if self.verbose:
+            print_time(f"({mismatch} MMs) Found {count_matches} matches")
+
         return matched, count_matches, results_df
 
-    def append_matching_donor(self, add_donors: Dict, donors_info: Iterable[str],
-                              patient: int, donor: int, match_prob: float, mm_number: int) -> None:
+    def __append_matching_donor(self, add_donors: Dict, donors_info: Iterable[str],
+                                patient: int, donor: int, match_prob: float, mm_number: int) -> None:
         """add a donor to the matches dictionary"""
 
         add_donors["Patient_ID"].append(patient)

@@ -15,43 +15,38 @@ from GRMA.Match.GraphWrapper import Graph
 from GRMA.Utilities.utils import print_time
 
 
-def search_in_levels(patient_id, g_m, verbose, donors_info, threshold, cutof, subclasses, classes):
+def search_in_levels(patient_id, g_m, donors_info, threshold, cutof, subclasses, classes):
     """"
     We should add documentation to this
     """
-    if verbose:
-        print_time(f"Searching matches for {patient_id}")
-
     matched = set()  # set of donors ID that have already matched for this patient
     results_df = _init_results_df(donors_info)  # initialize the df according to the given fields
 
     # We can give to this function the genotypes instead
-    g_m.find_candidates_by_genos(patient_id)
+    g_m.find_geno_candidates_by_genotypes(patient_id)
     matched, count, results_df = g_m.score_matches(0, results_df, donors_info, patient_id, threshold, cutof, matched)
 
     if len(matched) >= cutof:
         return results_df
 
-    g_m.find_geno_candidates_by_classes(classes, verbose)
+    g_m.find_geno_candidates_by_classes(classes)
     matched, count, results_df = g_m.score_matches(1, results_df, donors_info, patient_id, threshold, cutof, matched)
 
     if len(matched) >= cutof:
         return results_df
 
-    g_m.find_geno_candidates_by_subclasses(subclasses, verbose)
+    g_m.find_geno_candidates_by_subclasses(subclasses)
 
-    # loop over possible mismatches: 1, 2, 3.
-    for mismatches in range(1, 4):
+    # loop over possible mismatches: 2, 3.
+    for mismatches in range(2, 4):
         matched, count, results_df = g_m.score_matches(mismatches, results_df, donors_info,
                                                        patient_id, threshold, cutof, matched)
-        if verbose:
-            print_time(f"({mismatches} MMs) Found {count} matches")
 
     return results_df
 
 
 def find_matches(imputation_filename: Union[str, PathLike], graph: Graph,
-                 searchId: int, donors_info: Iterable[str],
+                 search_id: int, donors_info: Iterable[str],
                  threshold: float = 0.1, cutof: int = 50,
                  verbose: bool = False, save_to_csv: bool = False,
                  calculate_time: bool = False):
@@ -62,7 +57,7 @@ def find_matches(imputation_filename: Union[str, PathLike], graph: Graph,
 
     :param imputation_filename: Path to the output file of the imputation made by grim.
     :param graph: A Graph object from GRMA.Match
-    :param searchId: An integer identification of the search. default is 0.
+    :param search_id: An integer identification of the search. default is 0.
     :param donors_info: An iterable of fields from the database to include in the results. default is None.
     :param threshold: Minimal score value for a valid match. default is 0.1.
     :param cutof: Maximum number of matches to return. default is 50.
@@ -75,12 +70,12 @@ def find_matches(imputation_filename: Union[str, PathLike], graph: Graph,
     :return: A dictionary that maps each patient to its matching results formatted as a pandas.DataFrame
     """
     if save_to_csv:
-        os.mkdir(f"Matching_Results_{searchId}")
+        os.mkdir(f"Matching_Results_{search_id}")
 
     if verbose:
         print_time("Start graph matching")
 
-    g_m = DonorsMatching(graph)
+    g_m = DonorsMatching(graph, verbose=verbose)
 
     # create patients graph and find all candidates
     start_build_graph = time.time()
@@ -107,7 +102,7 @@ def find_matches(imputation_filename: Union[str, PathLike], graph: Graph,
 
         subclasses = subclasses_by_patient[patient]
         classes = classes_by_patient[patient]
-        results_df = search_in_levels(patient, g_m, verbose, donors_info, threshold, cutof, subclasses, classes)
+        results_df = search_in_levels(patient, g_m, donors_info, threshold, cutof, subclasses, classes)
 
         end = time.time()
         patient_time = end - start + avg_build_time
@@ -119,18 +114,18 @@ def find_matches(imputation_filename: Union[str, PathLike], graph: Graph,
 
         if save_to_csv:
             # save results to csv
-            results_df.to_csv(os.path.join(f"Matching_Results_{searchId}", f"Patient_{patient}.csv"), index=True,
+            results_df.to_csv(os.path.join(f"Matching_Results_{search_id}", f"Patient_{patient}.csv"), index=True,
                               float_format='%.2f')
             if verbose:
                 print_time(f"Saved Matching results for {patient} in "
-                           f"{os.path.join(f'Matching_Results_{searchId}', f'Patient_{patient}.csv')}")
+                           f"{os.path.join(f'Matching_Results_{search_id}', f'Patient_{patient}.csv')}")
 
     return patients_results
 
 
 def matching(filepath: Union[str, PathLike], grim_graph: GrimGraph, match_graph: MatchingGraph,
              save_imputation: Union[bool, str, PathLike] = False,
-             donors_info: Union[Iterable[str], None] = None, searchId: int = 0,
+             donors_info: Union[Iterable[str], None] = None, search_id: int = 0,
              threshold: float = 0.1, cutof: int = 50,
              verbose: bool = False, save_to_csv: bool = False):
     """
@@ -146,7 +141,7 @@ def matching(filepath: Union[str, PathLike], grim_graph: GrimGraph, match_graph:
     str/PathLike will create and save the given file as long as the file's directory is valid.
     Otherwise, the file will not be saved. default is False.
     :param donors_info: An iterable of fields from the database to include in the results. default is None.
-    :param searchId: An integer identification of the search. default is 0.
+    :param search_id: An integer identification of the search. default is 0.
     :param threshold: Minimal score value for a valid match. default is 0.1.
     :param cutof: Maximum number of matches to return. default is 50.
     :param verbose: A boolean flag for whether to print the documentation. default is False
@@ -159,7 +154,7 @@ def matching(filepath: Union[str, PathLike], grim_graph: GrimGraph, match_graph:
     if donors_info is None:
         donors_info = []
 
-    directory = f"MatchingFiles{searchId}"
+    directory = f"MatchingFiles{search_id}"
     try:
         # create a directory for the output of grim
         os.makedirs(directory, exist_ok=True)
@@ -168,13 +163,13 @@ def matching(filepath: Union[str, PathLike], grim_graph: GrimGraph, match_graph:
         if not verbose:
             sys.stdout = open(os.devnull, 'w')
 
-        imputation_filename: str = run_GRIMM(filepath, grim_graph, searchId, directory, save_imputation)
+        imputation_filename: str = run_GRIMM(filepath, grim_graph, search_id, directory, save_imputation)
 
         # enable output if disabled
         if not verbose:
             sys.stdout = sys.__stdout__
 
-        all_matches: Dict[int, pd.DataFrame] = find_matches(imputation_filename, match_graph, searchId, donors_info,
+        all_matches: Dict[int, pd.DataFrame] = find_matches(imputation_filename, match_graph, search_id, donors_info,
                                                             threshold, cutof, verbose, save_to_csv)
     finally:
         # delete the directory created for the output of grim
