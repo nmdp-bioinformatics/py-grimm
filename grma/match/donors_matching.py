@@ -278,7 +278,8 @@ class DonorsMatching(object):
             geno_num = self._patients_graph[geno][patient_id]["geno_num"]  # patient's geno index
             probability = self._patients_graph[geno][patient_id]["probability"]  # patient's geno probability
 
-            geno_id = self._graph.get_node_id(geno)
+            int_geno = tuple_geno_to_int(geno)
+            geno_id = self._graph.get_node_id(int_geno)
             if not geno_id:
                 continue
 

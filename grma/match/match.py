@@ -46,7 +46,7 @@ def search_in_levels(patient_id, g_m, donors_info, threshold, cutof, subclasses,
 
 
 def find_matches(imputation_filename: Union[str, PathLike], graph: Graph,
-                 search_id: int, donors_info: Iterable[str],
+                 search_id: int = 1, donors_info: Iterable[str] = [],
                  threshold: float = 0.1, cutof: int = 50,
                  verbose: bool = False, save_to_csv: bool = False,
                  calculate_time: bool = False):

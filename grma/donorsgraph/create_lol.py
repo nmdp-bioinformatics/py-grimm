@@ -6,7 +6,7 @@ import gc
 from collections import OrderedDict
 
 from grma.donorsgraph import Edge
-from grma.utilities.utils import print_time
+from grma.utilities.utils import print_time, tuple_geno_to_int
 
 
 class LolBuilder:
@@ -130,6 +130,12 @@ class LolBuilder:
             if not self._directed and left != right:
                 self._add_weights_and_neighbors(right, left, space, neighbors_list, index_list,
                                                 weight=weight, weights_list=weights_list)
+
+        # replace geno hashable array to more efficient representation.
+        for array_geno in layers["GENOTYPE"]:
+            int_geno = tuple_geno_to_int(array_geno)
+            map_node_to_number[int_geno] = map_node_to_number[array_geno]
+            del map_node_to_number[array_geno]
 
         del self._graph
         del layers
