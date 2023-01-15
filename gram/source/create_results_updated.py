@@ -30,6 +30,10 @@ def run_Post_GRIMM(input_from_grimm, orig_input, alleles_names, output_path, aux
 
     # create dict with the data from GRIMM
     for i in range(len(input_from_grimm)):
+
+        if input_from_grimm[i].count(',') == 3: # new version of grimm, haplotypes are separated with '+'
+            input_from_grimm[i] = input_from_grimm[i].replace('+A', ',A')
+
         input_from_grimm[i] = input_from_grimm[i].strip().split(",")
         if input_from_grimm[i][0] in grimm_dict:
             grimm_dict[input_from_grimm[i][0]].append(input_from_grimm[i][1:])
@@ -149,7 +153,7 @@ def consistent_haps_par_and_geno_child(pair, family, alleles_names):
     :param pair: pair of rwo haplotypes
     :param family: family dict
     :param alleles_names: alleles names
-    :return: True if consistency, False otherwise
+    :return: T+rue if consistency, False otherwise
     """
     hap1 = gl_string_to_dict(pair[0])
     hap2 = gl_string_to_dict(pair[1])

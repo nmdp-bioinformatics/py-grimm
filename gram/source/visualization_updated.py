@@ -102,9 +102,9 @@ def visualize(resultsFile, parent_has_empty_hap, output_path):
 
             threshold_fig += 1
             name_png = output_path + '/' + FAM_CODE + '.png'
-            name_pdf = output_path + '/' + FAM_CODE + '.pdf'
+            # name_pdf = output_path + '/' + FAM_CODE + '.pdf'
             plt.savefig(name_png, dpi=300)
-            plt.savefig(name_pdf)
+            # plt.savefig(name_pdf)
             plt.close('all')
             # plt.show()
 

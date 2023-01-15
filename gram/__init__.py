@@ -1,1 +1,1 @@
-from gramm.runfile import gramm
+from gram.source.main import gram
