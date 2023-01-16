@@ -2,34 +2,32 @@ import os
 import sys
 import json
 from datetime import datetime
+from pathlib import Path
 from .runfile_update import run_GRAMM
 from .create_results_updated import run_Post_GRIMM
 from .visualization_updated import visualize
 
 from grim import grim
 
-sys.path.insert(0,  os.path.dirname(os.path.realpath(__file__)).replace("/source", ""))
+# sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)).replace("/source", ""))
 
 
 def gram(config_file=None):
     if config_file is None:
-        config_file = os.path.dirname(os.path.realpath(__file__)).replace('/source', '') + '/conf/gram_config.json'
+        config_file = Path(__file__).parents[1] / Path('conf/gram_config.json')
 
     with open(config_file) as f:
         config = json.load(f)
 
     # get gram parameters
-    input_file_path = os.path.dirname(os.path.realpath(__file__)) + config.get('input_file_path', '/data/input_file_example.csv')
+    input_file_path = config.get('input_file_path', 'gram/source/data/input_file_example.csv')
     output_dir = config.get('output_dir', 'output_gram')
     alleles_names = config.get('alleles_names', ['A', 'B', 'C', 'DRB1', 'DQB1'])
     is_serology_data = config.get('is_serology_data', False)
     race_dict = config.get('races', {})
 
     # get grim parameters
-    if config.get('config_grim_path') == '':  # use default grim config file
-        config_grim_path = ''
-    else:  # user provided its config file for grim
-        config_grim_path = os.path.dirname(os.path.realpath(__file__)) + config.get('config_grim_path')
+    config_grim_path = config.get('config_grim_path', '')
     build_grim_graph = config.get('build_grim_graph', True)
 
     output_dir = create_output_dir(output_dir)
@@ -78,9 +76,9 @@ def process_grim_config_file(config_grim_path, output_dir):
     :return: a path to the adjusted grim config file and a path to grim imputation output
     """
     if config_grim_path == '':
-        config_grim_path = os.path.dirname(os.path.realpath(__file__)).replace('/gram/source', '') + '/conf/minimal-configuration.json'
+        config_grim_path = Path(__file__).parents[2] / Path('conf/minimal-configuration.json')
         if not os.path.exists(config_grim_path):  # in case we do not found the default config of grim, use a local copy
-            config_grim_path = os.path.dirname(os.path.realpath(__file__)).replace('/source', '') + '/conf/grim_conf_copy.json'
+            config_grim_path = Path(__file__).parents[1] / Path('conf/grim_conf_copy.json')
 
     with open(config_grim_path) as config_grim:
         grim_dict = json.load(config_grim)
@@ -90,7 +88,7 @@ def process_grim_config_file(config_grim_path, output_dir):
 
     out_imputation_file = os.path.join(grim_dict['imuptation_out_path'], grim_dict['imputation_out_hap_freq_filename'])
 
-    grim_conf_adjusted = os.path.dirname(os.path.realpath(__file__)).replace('/source', '') + '/conf/grim_conf_adjusted.json'
+    grim_conf_adjusted = Path(__file__).parents[1] / Path('conf/grim_conf_adjusted.json')
     with open(grim_conf_adjusted, 'w') as new_grim_config:
         json.dump(grim_dict, new_grim_config)
 
