@@ -1,9 +1,11 @@
-#import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
+
 
 def is_full_haplo(hap, locus):
     if all(loci in hap for loci in locus):
         return True
     return False
+
 
 """def Plot(values, titel, ylabel, xlabel, save_path):
         #r2 = np.array(prob)
@@ -19,12 +21,11 @@ def is_full_haplo(hap, locus):
         plt.clf()"""
 
 
-
-#cutt the dict to new_size
-def cut_dict(dict_val, new_size = 100000000):
+# cutt the dict to new_size
+def cut_dict(dict_val, new_size=100000000):
     cut_dict = {}
     dict_val = sorted(dict_val.items(), key=lambda x: x[1], reverse=True)
-    #dict_val.clear()
+    # dict_val.clear()
     while len(cut_dict) < new_size:
         cut_dict[dict_val[0][0]] = dict_val[0][1]
         del dict_val[0]
@@ -33,5 +34,5 @@ def cut_dict(dict_val, new_size = 100000000):
         #del dict_val[0]
         if len(cut_dict) > new_size:
             break"""
-    #dict_val = cut_dict
+    # dict_val = cut_dict
     return cut_dict
