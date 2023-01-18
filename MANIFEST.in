@@ -1,0 +1,8 @@
+include requirements.txt
+include README.md
+include LICENSE
+include *.txt
+recursive-include grem *.py
+recursive-include grem *.txt
+recursive-include grem *.json
+recursive-include grem *.csv
