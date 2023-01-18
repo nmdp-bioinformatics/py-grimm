@@ -1,0 +1,11 @@
+{
+  "1": "There is an allele which contains an invalid character. (It must contain numbers or uppercase only).",
+  "2": "Missing data about the family - less than two people.",
+  "3": "Missing data about the family - there are no children.",
+  "4": "Too many alleles in the family.",
+  "5": "There is an allele in a child that does not exist in the parents.",
+  "6": "Less than 4 different alleles in the children. Algorithm can not be executed.",
+  "7": "Failed in adding data. Contradiction between the parent and the child.",
+  "8": "Failed in creating GL string.",
+  "9": "Inconsistency between the parents' haplotypes and the children's HLA (Most common reason: recombination)."
+}
