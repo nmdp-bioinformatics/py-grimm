@@ -16,14 +16,23 @@ CLASS_I_END = 6
 
 
 class BuildMatchingGraph:
+    """
+    This class responsible for building the graph with the genotypes, classes and subclasses of the donors.
+    It gets a path to directory with the donors' file, builds the graph and saved it as LOL graph using Cython.
+    """
+
     __slots__ = '_verbose', "_graph", "_edges"
-    """
-    TODO: write doc for class
-    """
+
     def __init__(self, path_to_donors_directory: str, verbose: bool = False):
+        """
+        Build a donor's graph from the donor's genotypes.
+        Args:
+            path_to_donors_directory: The path to the donors files directory
+            verbose: A boolean flag for whether to print the documentation. default is False
+        """
         self._verbose = verbose
         self._graph = None  # LOL dict-representation
-        self._edges: List[Edge] = []  # egdelist
+        self._edges: List[Edge] = []  # edge-list
         self._save_graph_as_edges(path_to_donors_directory)
 
     def _create_classes_edges(self, geno, class_, layers):
@@ -35,16 +44,6 @@ class BuildMatchingGraph:
         if int_class not in layers["CLASS"]:
             layers["CLASS"].add(int_class)
             self._create_subclass_edges(class_, int_class, layers)
-
-        # map class to psudo-class
-        # mapped_class = layers["CLASS"].get(int_class, (len(layers["CLASS"]) + 1,))
-        #
-        # self._edges.append(Edge(mapped_class, geno, 0))
-        #
-        # # if so, do not need to create subclasses
-        # if int_class not in layers["CLASS"]:
-        #     layers["CLASS"][int_class] = mapped_class
-        #     self._create_subclass_edges(class_, int_class, layers)
 
     def _create_subclass_edges(self, class_, int_class, layers):
         """
