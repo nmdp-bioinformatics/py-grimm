@@ -1,5 +1,5 @@
-CONFIG = {
-    "pops": [
+{
+    "populations": [
         "AAFA", "AFB", "AINDI", "AISC", "ALANAM", "AMIND", "CARB", "CARHIS", "CARIBI",
         "HAWI", "FILII", "KORI", "JAPI", "MSWHIS", "MENAFC", "NAMER", "NCHI", "SCAHIS",
         "SCAMB", "SCSEAI", "VIET", "AFA", "API", "CAU", "HIS", "NAM", "Kavkaz", "Ashkenazi",
@@ -15,6 +15,7 @@ CONFIG = {
     },
     "UNK_priors": "SR",
     "FULL_LOCI": "ABCQR",
+    "full_loci": "ABCQR",
     "loci_map": {
         "A": 1,
         "B": 2,
@@ -31,28 +32,37 @@ CONFIG = {
         [[1], [2, 3], [4], [5]],
         [[1], [2], [3], [4], [5]]
     ],
-    "planb": True,
+    "planb": true,
     "number_of_options_threshold": 100000,
     "epsilon": 1e-3,
     "number_of_results": 10,
     "number_of_pop_results": 100,
-    "output_MUUG": True,
-    "output_haplotypes": False,
+    "output_MUUG": true,
+    "output_haplotypes": false,
     "max_haplotypes_number_in_phase": 300,
     "bin_imputation_input_file": "None",
-    "use_pops_count_file": False,
+    "use_pops_count_file": false,
     "nodes_for_plan_A": [],
-    "save_mode": False
+    "save_mode": false,
 
-    # fields that must be given by the user:
+    "imputation_in_file": "./in_file.csv",
 
-    # "imputation_in_file": input file for the imputation.
-    # "imputation_out_umug_freq_filename": genotype frequencies output file. the only file relevant for the matching.
-    # "imputation_out_umug_pops_filename": genotype pops output file
-    # "imputation_out_hap_freq_filename": haplotype frequencies output file.
-    # "imputation_out_hap_pops_filename": haplotype pops output file.
-    # "imputation_out_miss_filename": miss output file.
-    # "imputation_out_problem_filename": problem output file.
+    "freq_data_dir": "data/freqs" ,
+    "freq_file": "hpf.csv" ,
+    "imuptation_out_path": "grim_output",
+    "graph_files_path": "grim_output/csv/",
+
+    "node_csv_file": "nodes.csv",
+    "edges_csv_file": "edges.csv",
+    "info_node_csv_file": "info_node.csv",
+    "top_links_csv_file": "top_links.csv",
+
+    "imputation_out_umug_freq_filename": "don.umug",
+    "imputation_out_umug_pops_filename": "don.umug.pops",
+    "imputation_out_hap_freq_filename": "don.pmug",
+    "imputation_out_hap_pops_filename": "don.pmug.pops",
+    "imputation_out_miss_filename": "don.miss",
+    "imputation_out_problem_filename": "don.problem"
 }
 
 
