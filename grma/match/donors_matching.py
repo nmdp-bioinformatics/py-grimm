@@ -37,7 +37,12 @@ def _init_results_df(donors_info):
         "Match_Probability_C_1": [], "Match_Probability_C_2": [],
         "Match_Probability_DQB1_1": [], "Match_Probability_DQB1_2": [],
         "Match_Probability_DRB1_1": [], "Match_Probability_DRB1_2": [],
-        "Permissive/Non-Permissive": []
+        "Permissive/Non-Permissive": [],
+        "Match_Between_Most_Commons_A": [],
+        "Match_Between_Most_Commons_B": [],
+        "Match_Between_Most_Commons_C": [],
+        "Match_Between_Most_Commons_DQB": [],
+        "Match_Between_Most_Commons_DRB": []
     }
 
     donors_db_fields = DONORS_DB.columns.values.tolist()
@@ -45,6 +50,19 @@ def _init_results_df(donors_info):
         if di in donors_db_fields:
             fields_in_results[di] = []
     return pd.DataFrame(fields_in_results)
+
+
+def locuses_match_between_genos(geno1, geno2):
+    matches = []
+    for i in range(5):
+        a1, b1 = geno1[2 * i], geno1[2 * i + 1]
+        a2, b2 = geno2[2 * i], geno2[2 * i + 1]
+
+        s1 = int(a1 == a2) + int(b1 == b2)
+        s2 = int(a1 == b2) + int(b1 == a2)
+        matches.append(max(s1, s2))
+
+    return matches
 
 
 class DonorsMatching(object):
@@ -57,8 +75,20 @@ class DonorsMatching(object):
         self.patients: dict[int, Sequence[int]] = {}
         self.verbose = verbose
 
+    def get_most_common_genotype(self, donor_id):
+        """Takes a donor ID and return his/her most common genotype.
+        """
+        don_geno = ""
+        geno_max_prob = 0
+        for geno in self._graph.neighbors(donor_id):
+            if geno[1] > geno_max_prob:
+                geno_max_prob = geno[1]
+                don_geno = geno[0]
+
+        return don_geno
+
     def print_most_common_genotype(self, don_id: int, pat_geno: Sequence[int]) -> str:
-        """Takes a donor ID and a genotype. \n
+        """Takes a donor ID and a genotype.
         Returns the mismatch format of the most common genotype of the donor."""
         don_geno = ""
         geno_max_prob = 0
@@ -66,10 +96,11 @@ class DonorsMatching(object):
             if geno[1] > geno_max_prob:
                 geno_max_prob = geno[1]
                 don_geno = geno[0]
+
         return donor_mismatch_format(don_geno, pat_geno)
 
     def probability_to_allele(self, don_id: int, pat_geno: Sequence[int]) -> List[float]:
-        """Takes a donor ID and a genotype. \n
+        """Takes a donor ID and a genotype.
         Returns the probability of match for each allele"""
         probs = [0 for _ in range(10)]
 
@@ -110,7 +141,6 @@ class DonorsMatching(object):
 
             for geno_candidate_id, similarity in candidates_to_iterate:
                 # iterate over all the patients with the genotype
-                # TODO - consider delete the patient iterate
                 for patient_id in self._patients_graph.neighbors(geno):
                     # patient's geno index (the number of the geno in the imputation file)
                     geno_num = self._patients_graph[geno][patient_id]["geno_num"]
@@ -361,6 +391,8 @@ class DonorsMatching(object):
                                 patient: int, donor: int, match_prob: float, mm_number: int) -> None:
         """add a donor to the matches dictionary"""
 
+        compare_commons = locuses_match_between_genos(self.patients[patient], self.get_most_common_genotype(donor))
+
         add_donors["Patient_ID"].append(patient)
         add_donors["Donor_ID"].append(donor)
         allele_prob = self.probability_to_allele(don_id=donor, pat_geno=self.patients[patient])
@@ -374,6 +406,13 @@ class DonorsMatching(object):
         add_donors["Match_Probability_DQB1_2"].append(allele_prob[7])
         add_donors["Match_Probability_DRB1_1"].append(allele_prob[8])
         add_donors["Match_Probability_DRB1_2"].append(allele_prob[9])
+
+        add_donors["Match_Between_Most_Commons_A"].append(compare_commons[0])
+        add_donors["Match_Between_Most_Commons_B"].append(compare_commons[1])
+        add_donors["Match_Between_Most_Commons_C"].append(compare_commons[2])
+        add_donors["Match_Between_Most_Commons_DQB"].append(compare_commons[3])
+        add_donors["Match_Between_Most_Commons_DRB"].append(compare_commons[4])
+
         add_donors["Matching_Probability"].append(match_prob)
         add_donors["Number_Of_Mismatches"].append(mm_number)
         add_donors["Permissive/Non-Permissive"].append("-")  # TODO: add permissiveness algorithm

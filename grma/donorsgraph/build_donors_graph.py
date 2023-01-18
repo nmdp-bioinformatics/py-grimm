@@ -158,7 +158,7 @@ class BuildMatchingGraph:
         Save a pickle of the graph.
         To get the graph after pickling use:
 
-        >>> from GRMA.match.GraphWrapper import Graph
+        >>> from grma.match.graph_wrapper import Graph
         >>> Graph.from_pickle(path)
 
         :param path: A path to save the pickled object
