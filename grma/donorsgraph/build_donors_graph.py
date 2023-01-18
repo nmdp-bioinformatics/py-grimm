@@ -21,7 +21,7 @@ class BuildMatchingGraph:
     It gets a path to directory with the donors' file, builds the graph and saved it as LOL graph using Cython.
     """
 
-    __slots__ = '_verbose', "_graph", "_edges"
+    __slots__ = "_verbose", "_graph", "_edges"
 
     def __init__(self, path_to_donors_directory: str, verbose: bool = False):
         """
@@ -58,9 +58,15 @@ class BuildMatchingGraph:
         # set the missing allele to always be the second allele in the locus
         for i in range(num_of_alleles):
             if i % 2 == 0:
-                subclass_alleles.add(tuple_geno_to_int(tuple(class_[0: i] + (0,) + class_[i + 1:])))
+                subclass_alleles.add(
+                    tuple_geno_to_int(tuple(class_[0:i] + (0,) + class_[i + 1 :]))
+                )
             else:
-                subclass_alleles.add(tuple_geno_to_int(tuple(class_[0: i - 1] + (0, class_[i - 1]) + class_[i + 1:])))
+                subclass_alleles.add(
+                    tuple_geno_to_int(
+                        tuple(class_[0 : i - 1] + (0, class_[i - 1]) + class_[i + 1 :])
+                    )
+                )
 
         # add subclass->class edges
         for sub in subclass_alleles:
@@ -80,7 +86,7 @@ class BuildMatchingGraph:
             "ID": set(),
             "GENOTYPE": set(),
             "CLASS": set(),  # map classes to mp.uint32 objects
-            "SUBCLASS": set()
+            "SUBCLASS": set(),
         }
         count_donors = 0
 
@@ -90,9 +96,13 @@ class BuildMatchingGraph:
 
         for filename in files:
             with open(os.path.join(path_to_donors_directory, filename)) as f:
-                for line in tqdm(f.readlines(), desc=f"Processing {filename}", disable=not self._verbose):
+                for line in tqdm(
+                    f.readlines(),
+                    desc=f"Processing {filename}",
+                    disable=not self._verbose,
+                ):
                     # retrieve all line's parameters
-                    donor_id, geno, probability, index = line.strip().split(',')
+                    donor_id, geno, probability, index = line.strip().split(",")
 
                     donor_id = int(donor_id)
                     index = int(index)
@@ -103,7 +113,7 @@ class BuildMatchingGraph:
 
                     # sort alleles for each HLA-X
                     for x in range(0, 10, 2):
-                        geno[x: x + 2] = sorted(geno[x: x + 2])
+                        geno[x : x + 2] = sorted(geno[x : x + 2])
                     geno = HashableArray(geno)
 
                     # handle new donor appearance in file
@@ -112,8 +122,12 @@ class BuildMatchingGraph:
 
                         # add id<->geno nodes to edgelist
                         for HLA, geno_probability in probability_dict.items():
-                            self._edges.append(Edge(HLA, last_id, geno_probability / total_probability))
-                            self._edges.append(Edge(last_id, HLA, geno_probability / total_probability))
+                            self._edges.append(
+                                Edge(HLA, last_id, geno_probability / total_probability)
+                            )
+                            self._edges.append(
+                                Edge(last_id, HLA, geno_probability / total_probability)
+                            )
 
                         # initialize parameters
                         total_probability = 0
@@ -146,7 +160,9 @@ class BuildMatchingGraph:
             print(f"Total number of donors:{count_donors}")
 
         # create graph's dict-representation of LOL
-        self._graph = LolBuilder(directed=True, weighted=True, verbose=self._verbose).build(self._edges, layers)
+        self._graph = LolBuilder(
+            directed=True, weighted=True, verbose=self._verbose
+        ).build(self._edges, layers)
 
     @property
     def graph(self):

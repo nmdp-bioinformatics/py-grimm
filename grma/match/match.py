@@ -19,7 +19,7 @@ GRIM_RESULT_GENO_FILE_FIELD = "imputation_out_umug_freq_filename"
 
 
 def run_grim(config_file_path=""):
-    """"
+    """ "
     This function applies grim imputation with the default/user's configuration file.
 
     :param config_file_path: A path to configuration file for grim imputation. default is grim default config.
@@ -47,9 +47,16 @@ def run_grim(config_file_path=""):
     return path
 
 
-def search_in_levels(patient_id: int, g_m: DonorsMatching, donors_info: Iterable, threshold: float,
-                     cutof: int, classes: Iterable, subclasses: Iterable):
-    """"
+def search_in_levels(
+    patient_id: int,
+    g_m: DonorsMatching,
+    donors_info: Iterable,
+    threshold: float,
+    cutof: int,
+    classes: Iterable,
+    subclasses: Iterable,
+):
+    """ "
     This function gets the information about the patient and other settings, and search for donors in levels.
     First, it will search only for 10 matches donors (compare only genotypes). If there aren't enough donors,
     the function will search for 9 matches donors (compare classes), and then 8-7 matches (subclasses)
@@ -65,17 +72,23 @@ def search_in_levels(patient_id: int, g_m: DonorsMatching, donors_info: Iterable
     """
 
     matched = set()  # set of donors ID that have already matched for this patient
-    results_df = _init_results_df(donors_info)  # initialize the df according to the given fields
+    results_df = _init_results_df(
+        donors_info
+    )  # initialize the df according to the given fields
 
     # We can give to this function the genotypes instead
     g_m.find_geno_candidates_by_genotypes(patient_id)
-    matched, count, results_df = g_m.score_matches(0, results_df, donors_info, patient_id, threshold, cutof, matched)
+    matched, count, results_df = g_m.score_matches(
+        0, results_df, donors_info, patient_id, threshold, cutof, matched
+    )
 
     if len(matched) >= cutof:
         return results_df
 
     g_m.find_geno_candidates_by_classes(classes)
-    matched, count, results_df = g_m.score_matches(1, results_df, donors_info, patient_id, threshold, cutof, matched)
+    matched, count, results_df = g_m.score_matches(
+        1, results_df, donors_info, patient_id, threshold, cutof, matched
+    )
 
     if len(matched) >= cutof:
         return results_df
@@ -84,17 +97,24 @@ def search_in_levels(patient_id: int, g_m: DonorsMatching, donors_info: Iterable
 
     # loop over possible mismatches: 2, 3.
     for mismatches in range(2, 4):
-        matched, count, results_df = g_m.score_matches(mismatches, results_df, donors_info,
-                                                       patient_id, threshold, cutof, matched)
+        matched, count, results_df = g_m.score_matches(
+            mismatches, results_df, donors_info, patient_id, threshold, cutof, matched
+        )
 
     return results_df
 
 
-def find_matches(imputation_filename: Union[str, PathLike], match_graph: Graph,
-                 search_id: int = 1, donors_info: Iterable[str] = [],
-                 threshold: float = 0.1, cutof: int = 50,
-                 verbose: bool = False, save_to_csv: bool = False,
-                 calculate_time: bool = False):
+def find_matches(
+    imputation_filename: Union[str, PathLike],
+    match_graph: Graph,
+    search_id: int = 1,
+    donors_info: Iterable[str] = [],
+    threshold: float = 0.1,
+    cutof: int = 50,
+    verbose: bool = False,
+    save_to_csv: bool = False,
+    calculate_time: bool = False,
+):
     """
     The main function responsible for performing the matching.
     Note: for each patient, if a donor has been found as a
@@ -124,7 +144,9 @@ def find_matches(imputation_filename: Union[str, PathLike], match_graph: Graph,
 
     # create patients graph and find all candidates
     start_build_graph = time.time()
-    subclasses_by_patient, classes_by_patient = g_m.create_patients_graph(imputation_filename)
+    subclasses_by_patient, classes_by_patient = g_m.create_patients_graph(
+        imputation_filename
+    )
     patients = list(g_m.patients.keys())
 
     if verbose:
@@ -150,7 +172,9 @@ def find_matches(imputation_filename: Union[str, PathLike], match_graph: Graph,
 
         subclasses = subclasses_by_patient[patient]
         classes = classes_by_patient[patient]
-        results_df = search_in_levels(patient, g_m, donors_info, threshold, cutof, classes, subclasses)
+        results_df = search_in_levels(
+            patient, g_m, donors_info, threshold, cutof, classes, subclasses
+        )
 
         end = time.time()
         patient_time = end - start + avg_build_time
@@ -162,20 +186,31 @@ def find_matches(imputation_filename: Union[str, PathLike], match_graph: Graph,
 
         if save_to_csv:
             # save results to csv
-            results_df.to_csv(os.path.join(f"Matching_Results_{search_id}", f"Patient_{patient}.csv"), index=True,
-                              float_format='%.2f')
+            results_df.to_csv(
+                os.path.join(f"Matching_Results_{search_id}", f"Patient_{patient}.csv"),
+                index=True,
+                float_format="%.2f",
+            )
             if verbose:
-                print_time(f"Saved Matching results for {patient} in "
-                           f"{os.path.join(f'Matching_Results_{search_id}', f'Patient_{patient}.csv')}")
+                print_time(
+                    f"Saved Matching results for {patient} in "
+                    f"{os.path.join(f'Matching_Results_{search_id}', f'Patient_{patient}.csv')}"
+                )
 
     return patients_results
 
 
-def matching(match_graph: MatchingGraph, grim_config_file="",
-             save_imputation: Union[bool, str, PathLike] = False,
-             donors_info: Union[Iterable[str], None] = None, search_id: int = 0,
-             threshold: float = 0.1, cutof: int = 50,
-             verbose: bool = False, save_to_csv: bool = False):
+def matching(
+    match_graph: MatchingGraph,
+    grim_config_file="",
+    save_imputation: Union[bool, str, PathLike] = False,
+    donors_info: Union[Iterable[str], None] = None,
+    search_id: int = 0,
+    threshold: float = 0.1,
+    cutof: int = 50,
+    verbose: bool = False,
+    save_to_csv: bool = False,
+):
     """
     A function that performs the patients imputation with the matching.
     The imputation is performed with GRIM algorithm.
@@ -203,7 +238,7 @@ def matching(match_graph: MatchingGraph, grim_config_file="",
 
     # disable output from grim
     if not verbose:
-        sys.stdout = open(os.devnull, 'w')
+        sys.stdout = open(os.devnull, "w")
 
     imputation_path: str = run_grim(grim_config_file)
 
@@ -211,7 +246,15 @@ def matching(match_graph: MatchingGraph, grim_config_file="",
     if not verbose:
         sys.stdout = sys.__stdout__
 
-    all_matches: Dict[int, pd.DataFrame] = find_matches(imputation_path, match_graph, search_id, donors_info,
-                                                        threshold, cutof, verbose, save_to_csv)
+    all_matches: Dict[int, pd.DataFrame] = find_matches(
+        imputation_path,
+        match_graph,
+        search_id,
+        donors_info,
+        threshold,
+        cutof,
+        verbose,
+        save_to_csv,
+    )
 
     return all_matches

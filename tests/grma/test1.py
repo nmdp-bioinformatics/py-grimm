@@ -7,12 +7,14 @@ PATIENTS_FILE_PATH = "data/test_patients.txt"
 build_matching = BuildMatchingGraph(DONORS_DIR_PATH)
 donors_graph = build_matching.graph
 
-matching_results = find_matches(PATIENTS_FILE_PATH,
-                                donors_graph,
-                                threshold=0.2,
-                                cutof=100,
-                                calculate_time=False,
-                                verbose=False)
+matching_results = find_matches(
+    PATIENTS_FILE_PATH,
+    donors_graph,
+    threshold=0.2,
+    cutof=100,
+    calculate_time=False,
+    verbose=False,
+)
 
 for patient, df in matching_results.items():
     # There are only few donors and patients (The donors\patients files are the same),

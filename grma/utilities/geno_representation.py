@@ -61,4 +61,3 @@ class HashableArray:
 
     def np(self):
         return self.arr
-

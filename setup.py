@@ -43,18 +43,24 @@ setup(
             "grma.donorsgraph",
             "grma.imputation",
             "grma.match",
-            "grma.utilities"
+            "grma.utilities",
         ]
     ),
     test_suite="tests",
     zip_safe=False,
     ext_modules=cythonize(
         [
-            Extension("grma.utilities.cutils", ["grma/utilities/cutils.pyx"],
-                      define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")]),
-            Extension("grma.match.lol_graph", ["grma/match/lol_graph.pyx"],
-                      define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")])
+            Extension(
+                "grma.utilities.cutils",
+                ["grma/utilities/cutils.pyx"],
+                define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")],
+            ),
+            Extension(
+                "grma.match.lol_graph",
+                ["grma/match/lol_graph.pyx"],
+                define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")],
+            ),
         ]
     ),
-    include_dirs=[np.get_include()]
+    include_dirs=[np.get_include()],
 )

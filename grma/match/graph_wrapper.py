@@ -14,19 +14,22 @@ NODES_TYPES = Union[int, HashableArray]
 
 class Graph(object):
     """Graph wrapper class for LOLGraph"""
+
     __slots__ = "_map_node_to_number", "_graph"
 
     def __init__(self, lol_properties: dict):
         self._map_node_to_number = lol_properties["map_node_to_number"]
 
-        self._graph = LolGraph(index_list=lol_properties["index_list"],
-                               neighbors_list=lol_properties["neighbors_list"],
-                               weights_list=lol_properties["weights_list"],
-                               map_number_to_num_node=lol_properties["map_number_to_num_node"],
-                               map_number_to_arr_node=lol_properties["map_number_to_arr_node"],
-                               arrays_start=lol_properties["arrays_start"],
-                               directed=lol_properties["directed"],
-                               weighted=lol_properties["weighted"])
+        self._graph = LolGraph(
+            index_list=lol_properties["index_list"],
+            neighbors_list=lol_properties["neighbors_list"],
+            weights_list=lol_properties["weights_list"],
+            map_number_to_num_node=lol_properties["map_number_to_num_node"],
+            map_number_to_arr_node=lol_properties["map_number_to_arr_node"],
+            arrays_start=lol_properties["arrays_start"],
+            directed=lol_properties["directed"],
+            weighted=lol_properties["weighted"],
+        )
 
     def in_nodes(self, node: NODES_TYPES) -> bool:
         """return True if the given node is in the graph and false otherwise"""
@@ -36,8 +39,14 @@ class Graph(object):
         """return True if the given node is in the graph and false otherwise"""
         return self._map_node_to_number.get(node, None)
 
-    def get_edge_data(self, node1: NODES_TYPES, node2: NODES_TYPES,
-                      node1_id: bool = False, node2_id: bool = False, default: object = None):
+    def get_edge_data(
+        self,
+        node1: NODES_TYPES,
+        node2: NODES_TYPES,
+        node1_id: bool = False,
+        node2_id: bool = False,
+        default: object = None,
+    ):
         """
         Returns edge properties. If does not exist return default
         """
@@ -57,7 +66,9 @@ class Graph(object):
 
         return neighbors_list, neighbors_list_values
 
-    def neighbors_unweighted(self, node: NODES_TYPES | int, search_lol_id: bool = False):
+    def neighbors_unweighted(
+        self, node: NODES_TYPES | int, search_lol_id: bool = False
+    ):
         """
         Get node's neighbors. There are some options for what to get (see parameters).
          - Search node by its name: search_lol_id=False
@@ -73,7 +84,9 @@ class Graph(object):
 
         return neighbors_list, neighbors_list_values
 
-    def neighbors(self, node: NODES_TYPES | int, search_lol_id: bool = False) -> zip[tuple[int, float]] | list[int]:
+    def neighbors(
+        self, node: NODES_TYPES | int, search_lol_id: bool = False
+    ) -> zip[tuple[int, float]] | list[int]:
         """
         Get node's neighbors. There are some options for what to get (see parameters).
          - Search node by its name: search_lol_id=False
