@@ -2,7 +2,6 @@ import numpy as np
 from setuptools import setup, Extension, find_packages
 from Cython.Build import cythonize
 
-
 with open("grma/README.md") as readme_file:
     readme = readme_file.read()
 
@@ -10,11 +9,11 @@ with open("requirements.txt") as requirements_file:
     requirements = requirements_file.read().split("\n")
 
 setup(
-    name="GRMA",
+    name="grimm",
     version="0.0.1",
-    author="Amit Kabya",
-    maintainer="Ziv Naim",
-    author_email="kabya.amit@gmail.com",
+    author="YOLO lab",
+    maintainer="YOLO lab",
+    author_email="louzouy@math.biu.ac.il",
     python_requires=">=3.8",
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",

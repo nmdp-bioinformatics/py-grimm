@@ -1,0 +1,10 @@
+{
+  "input_file_path": "gram/source/data/input_file_example.csv",
+  "alleles_names": ["A", "B", "C", "DRB1", "DQB1"],
+  "output_dir": "output_gram",
+  "is_serology_data": false,
+  "races": {},
+
+  "config_grim_path": "",
+  "build_grim_graph": true
+}
