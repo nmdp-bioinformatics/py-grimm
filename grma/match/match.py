@@ -90,7 +90,7 @@ def search_in_levels(patient_id: int, g_m: DonorsMatching, donors_info: Iterable
     return results_df
 
 
-def find_matches(imputation_filename: Union[str, PathLike], graph: Graph,
+def find_matches(imputation_filename: Union[str, PathLike], match_graph: Graph,
                  search_id: int = 1, donors_info: Iterable[str] = [],
                  threshold: float = 0.1, cutof: int = 50,
                  verbose: bool = False, save_to_csv: bool = False,
@@ -101,7 +101,7 @@ def find_matches(imputation_filename: Union[str, PathLike], graph: Graph,
     match in an early stage (0, 1, or 2 mm), he will not be searched as a match for the further mismatches.
 
     :param imputation_filename: Path to the output file of the imputation made by grim.
-    :param graph: A Graph object from GRMA.match
+    :param match_graph: A Graph object from grma.match
     :param search_id: An integer identification of the search. default is 0.
     :param donors_info: An iterable of fields from the database to include in the results. default is None.
     :param threshold: Minimal score value for a valid match. default is 0.1.
@@ -120,7 +120,7 @@ def find_matches(imputation_filename: Union[str, PathLike], graph: Graph,
     if verbose:
         print_time("Start graph matching")
 
-    g_m = DonorsMatching(graph, verbose=verbose)
+    g_m = DonorsMatching(match_graph, verbose=verbose)
 
     # create patients graph and find all candidates
     start_build_graph = time.time()
@@ -180,7 +180,7 @@ def matching(match_graph: MatchingGraph, grim_config_file="",
     A function that performs the patients imputation with the matching.
     The imputation is performed with GRIM algorithm.
 
-    :param match_graph: A Graph object from GRMA.match
+    :param match_graph: A Graph object from grma.match
     :param grim_config_file: A path to configuration file for grim imputation. default is grim default config.
     :param save_imputation: A flag for whether to save the imputation results. default is False.
     Accepts boolean/str/PathLike values - False will not save a file,
